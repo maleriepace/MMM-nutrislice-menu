@@ -100,33 +100,36 @@ Module.register("MMM-nutrislice-menu", {
 			const mapOfDays = this.getMapOfDays(days);
 			console.log("mapOfDays" , mapOfDays);
 			if ((mapOfDays || []).length > 0) {
-				var tableElement = document.createElement("table");
-				tableElement.className = this.config.tableClass;
-				var tableRow = document.createElement("tr");
+				var tableElement = wrapper.appendChild(document.createElement("table"));
+				if(this.config.tableClass){
+					tableElement.className = this.config.tableClass;
+				}
+				var headerRow = tableElement.appendChild(document.createElement("tr"));
+				var foodRow = tableElement.appendChild(document.createElement("tr"));
+				foodRow.style = "vertical-align: top;";
+
 				mapOfDays.forEach(function (day) {
-					var tableCell = document.createElement("td");
-					var dayItem = document.createElement("u");
+					// Create day headers
+					var headerCell = headerRow.appendChild(document.createElement("td"));
+					var dayItem = headerCell.appendChild(document.createElement("u"));
 					if (day.activityDay){
 						dayItem.innerHTML = day.dayOfWeek + "-" + day.activityDay;
 					} else {
 						dayItem.innerHTML = day.dayOfWeek;
 					}
-					tableCell.appendChild(dayItem);
-					tableCell.appendChild(document.createElement("br"));
-					var itemCount = 0;
-					day.foodList.forEach(function (item) {
-						if (itemCount < itemLimit || itemLimit == 0) {
-							var foodItem = document.createElement("span");
-							foodItem.innerHTML = item;
-							tableCell.appendChild(foodItem);
-							tableCell.appendChild(document.createElement("br"));
-							itemCount++;
+
+					// Create food list
+					var foodCell = foodRow.appendChild(document.createElement("td"));
+					foodCell.style = "list-style-type: none; padding: 0;";
+					var foodUList = foodCell.appendChild(document.createElement("ul"));
+					foodUList.style = "list-style-type: none; padding: 0;";
+					day.foodList.forEach((item, index) => {
+						if (index < itemLimit || itemLimit == 0) {
+							var listItem = foodUList.appendChild(document.createElement("li"));
+							listItem.innerHTML = item;
 						}
 					})
-					tableRow.appendChild(tableCell);
 				})
-				tableElement.appendChild(tableRow);
-				wrapper.appendChild(tableElement);
 				//end Format response to screen
 			}
 			else {
@@ -151,15 +154,7 @@ Module.register("MMM-nutrislice-menu", {
 
 	getWeekDay(dateString) {
 		const date = new Date(dateString);
-		var weekday = new Array(7);
-		weekday[6] = "Sunday";
-		weekday[0] = "Monday";
-		weekday[1] = "Tuesday";
-		weekday[2] = "Wednesday";
-		weekday[3] = "Thursday";
-		weekday[4] = "Friday";
-		weekday[5] = "Saturday";
-		return weekday[date.getDay()];
+		return Intl.DateTimeFormat(this.config.locale, { weekday: 'long' }).format(date);
 	},
 
 	getMapOfDays(days) {
